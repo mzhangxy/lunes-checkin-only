@@ -1,0 +1,11 @@
+DrissionPage
+requests
+PyNaCl
+DataRecorder
+DownloadKit
+FlowViewer
+lxml
+websocket-client
+psutil
+SpeechRecognition
+pydub
