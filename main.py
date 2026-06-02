@@ -280,89 +280,13 @@ class LunesAuto:
                 self.screenshot(page, "no_server_card_found")
                 raise Exception("Cannot find Server Card")
             
-            self.log("🖱️ Clicking Server Card...")
-            server_card.click()
-            time.sleep(5)
-
-            # Click Open Panel
-            panel_btn = page.ele('text:Open Panel')
-            if panel_btn:
-                self.log("🖱️ Clicking Open Panel")
-                panel_btn.click()
-                time.sleep(8)
-
-            # === Pterodactyl Login ===
-            ptero_user_ele = page.ele('css:input[name="username"]') or page.ele('css:input[name="user"]')
+            # +++ 修改的核心逻辑：找到卡片后直接截图发送，然后退出 +++
+            self.log("✅ 成功找到 Server Card！")
+            img_path = self.screenshot(page, "task_completed")
+            self.send_tg("✅ <b>Lunes 任务完成</b>\n已成功登录并找到 Server Card，脚本自动退出。", img_path)
             
-            if ptero_user_ele:
-                self.log("🔒 Pterodactyl Login Detected...")
-                ptero_user_ele.input(self.panel_user)
-                page.ele('css:input[name="password"]').input(self.panel_pass)
-                
-                self.log("🖱️ Clicking Pterodactyl Login Button...")
-                
-                login_btn = page.ele('css:button[type="submit"]')
-                if not login_btn:
-                    login_btn = page.ele('text:LOGIN') or page.ele('text:Login')
-                
-                if login_btn:
-                    login_btn.click()
-                else:
-                    self.log("⚠️ Pterodactyl login button not found, simulating Enter key...")
-                    page.ele('css:input[name="password"]').press('Enter')
-
-                # +++ 新增：检测并处理弹出的 reCAPTCHA 挑战 +++
-                self.log("🔍 Checking for reCAPTCHA challenge popup...")
-                # reCAPTCHA 弹窗的 iframe 通常 title 包含 "recaptcha challenge" 或 src 包含 "bframe"
-                bframe_ele = page.ele('css:iframe[title*="recaptcha challenge"]', timeout=5) or page.ele('css:iframe[src*="bframe"]', timeout=5)
-                
-                if bframe_ele:
-                    self.log("🛡️ reCAPTCHA Challenge detected! Initiating audio solver...")
-                    bframe = page.get_frame(bframe_ele)
-                    
-                    # 实例化你的音频破解器
-                    solver = RecaptchaAudioSolver(page)
-                    solver.log_func = self.log # 将 solver 的日志输出重定向到你的主控 log
-                    
-                    success = solver.solve(bframe)
-                    if success:
-                        self.log("✅ Audio challenge solved successfully!")
-                        time.sleep(3) # 给页面一点时间完成登录跳转
-                    else:
-                        self.log("❌ Audio challenge failed.")
-                        self.screenshot(page, "audio_solve_failed")
-                else:
-                    self.log("✅ No secondary reCAPTCHA challenge detected.")
-
-                time.sleep(8)
-                
-                srv_inner = page.ele('css:a[href*="/server/"]')
-                if srv_inner: 
-                    self.log("🖱️ Clicking inner server link...")
-                    srv_inner.click()
-                    time.sleep(5)
-
-            # Restart Logic
-            self.log("🔄 Looking for Restart Button...")
-            self.screenshot(page, "console_page")
-            
-            if "Create Server" in page.html and "Start" not in page.html:
-                 self.log("❌ Wrong page detected (Create Server).")
-                 return
-
-            restart = page.ele('text:Restart', timeout=10) or page.ele('text:Start')
-            
-            if restart:
-                restart.click()
-                self.log("✅ Click Success")
-                # 保存截图并发送带图通知
-                img_path = self.screenshot(page, "success")
-                self.send_tg("✅ <b>Lunes 续期成功</b>\n已执行 Restart 操作", img_path)
-            else:
-                self.log("⚠️ Restart Button Not Found")
-                # 失败也发图
-                img_path = self.screenshot(page, "no_restart_btn")
-                self.send_tg("⚠️ <b>Lunes 警告</b>\n登录成功但未找到重启按钮", img_path)
+            # 直接 return 结束当前函数，它会自动跳转到 finally 块去清理浏览器并退出
+            return
 
         except Exception as e:
             self.log(f"❌ Error: {e}")
