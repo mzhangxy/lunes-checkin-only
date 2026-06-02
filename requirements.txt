@@ -7,5 +7,3 @@ FlowViewer
 lxml
 websocket-client
 psutil
-SpeechRecognition
-pydub
