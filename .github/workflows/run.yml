@@ -21,7 +21,7 @@ jobs:
       - name: Install Chrome & Xvfb
         run: |
           sudo apt-get update
-          sudo apt-get install -y google-chrome-stable xvfb ffmpeg
+          sudo apt-get install -y google-chrome-stable xvfb
 
       - name: Install Python dependencies
         run: |
@@ -49,4 +49,4 @@ jobs:
           path: |
             *.jpg
             *.png
-          retention-days: 2
+          retention-days: 1
