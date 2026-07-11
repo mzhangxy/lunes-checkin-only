@@ -197,6 +197,13 @@ class LunesAuto:
         co.set_user_data_path("./tmp_browser_data")
         co.auto_port()
 
+        proxy_url = os.getenv('PROXY')
+        if proxy_url:
+            self.log(f"🔌 检测到代理，正在为浏览器挂载: {proxy_url}")
+            co.set_proxy(proxy_url)
+        else:
+            self.log("🌐 未检测到代理，使用直连模式")
+            
         page = ChromiumPage(co)
         
         try:
