@@ -27,6 +27,34 @@ jobs:
         run: |
           pip install -r requirements.txt
 
+      - name: 🚇 启动 Xray 代理隧道
+        env:
+          XRAY_CONFIG: ${{ secrets.PROXY_NODE }} 
+        run: |
+          if [ -z "$XRAY_CONFIG" ]; then
+            echo "🌐 未检测到 PROXY_NODE 节点配置，跳过 Xray 代理启动，将使用原生 IP 直连。"
+            exit 0
+          fi
+          
+          echo "📥 正在下载 Xray 核心..."
+          wget -q https://github.com/XTLS/Xray-core/releases/latest/download/Xray-linux-64.zip
+          unzip -q Xray-linux-64.zip -d xray_core
+          chmod +x xray_core/xray
+          
+          echo "⚙️ 正在写入节点配置..."
+          echo "$XRAY_CONFIG" > xray_core/config.json
+          
+          echo "🚀 后台启动 Xray 隧道..."
+          nohup ./xray_core/xray -c ./xray_core/config.json > xray.log 2>&1 &
+          sleep 4
+          
+          echo "✅ Xray 已启动，测试连通性 (输出出口 IP 则为成功)..."
+          curl -s -x socks5h://127.0.0.1:10808 https://api.ipify.org
+          echo ""
+          
+          # 动态注入代理环境变量，供下游 Python 脚本使用
+          echo "PROXY=socks5://127.0.0.1:10808" >> $GITHUB_ENV
+          
       # 在虚拟屏幕上运行 python 脚本
       - name: Run Renew Script
         env:
