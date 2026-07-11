@@ -172,17 +172,16 @@ class LunesAuto:
                 iframe.click.at(offset_x=20, offset_y=30)
 
             self.log("⏳ Waiting for verification...")
-            for i in range(15):
+            for i in range(25): # 稍微延长一点等待时间
                 time.sleep(1)
                 res_ele = page.ele('css:[name="cf-turnstile-response"]')
                 if res_ele and res_ele.value:
-                    self.log(f"🎉 Verification Success (Token generated, {i+1}s)")
+                    self.log(f"🎉 Verification Success (Token generated: {res_ele.value[:10]}..., {i+1}s)")
                     return True
-                if not page.get_frame('src:challenges.cloudflare.com'):
-                    self.log("🎉 Verification Success (Iframe disappeared)")
-                    return True
-            
-            self.log("❌ Verification Timeout")
+                
+                # ❌ 删掉原有的 if not page.get_frame('src:challenges.cloudflare.com'): return True
+                
+            self.log("❌ Verification Timeout: Stuck on 'Verifying' or Blocked")
             self.screenshot(page, "debug_turnstile_timeout")
             return False
 
@@ -234,7 +233,8 @@ class LunesAuto:
                 self.screenshot(page, "login_filled")
                 time.sleep(2) 
 
-                self.solve_turnstile(page)
+                if not self.solve_turnstile(page):
+                    raise Exception("Turnstile verification failed to generate token.")
 
                 self.log("🖱️ Clicking Login Button...")
                 btn = page.ele('text:Continue to dashboard') or page.ele('text:Sign in') or page.ele('text:Continue')
