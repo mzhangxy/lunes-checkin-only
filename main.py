@@ -34,7 +34,7 @@ class LunesAuto:
         """辅助截图函数"""
         try:
             ts = datetime.now().strftime('%H%M%S')
-            filename = f"{name}.jpg" # 简化文件名，方便发送
+            filename = f"{name}.jpg" 
             page.get_screenshot(path=filename, full_page=True)
             self.log(f"📸 Screenshot saved: {filename}")
             return filename
@@ -122,7 +122,6 @@ class LunesAuto:
             self.log(f"⚠️ Secret update failed: {e}")
 
     def solve_turnstile(self, page):
-        """DrissionPage 专用过盾逻辑"""
         self.log("🛡️ [Turnstile] Detecting protection...")
         self.screenshot(page, "debug_turnstile_start")
         
@@ -172,7 +171,7 @@ class LunesAuto:
                 iframe.click.at(offset_x=20, offset_y=30)
 
             self.log("⏳ Waiting for verification...")
-            for i in range(25): # 稍微延长一点等待时间
+            for i in range(25): 
                 time.sleep(1)
                 res_ele = page.ele('css:[name="cf-turnstile-response"]')
                 if res_ele and res_ele.value:
@@ -221,7 +220,6 @@ class LunesAuto:
             page.get("https://betadash.lunes.host/", retry=3, interval=2)
             time.sleep(5)
 
-            # +++ 新增：全局拦截检测 +++
             # 如果页面上出现了 Turnstile 的 iframe，说明被拦截了，优先解盾
             if page.ele('css:iframe[src*="challenges"]', timeout=3):
                 self.log("🛡️ Cloudflare verification detected on homepage!")
@@ -287,12 +285,11 @@ class LunesAuto:
                 self.screenshot(page, "no_server_card_found")
                 raise Exception("Cannot find Server Card")
             
-            # +++ 修改的核心逻辑：找到卡片后直接截图发送，然后退出 +++
+            # 找到卡片后直接截图发送，然后退出
             self.log("✅ 成功找到 Server Card！")
             img_path = self.screenshot(page, "task_completed")
             self.send_tg("✅ <b>Lunes 任务完成</b>\n已成功登录并找到 Server Card，脚本自动退出。", img_path)
             
-            # 直接 return 结束当前函数，它会自动跳转到 finally 块去清理浏览器并退出
             return
 
         except Exception as e:
