@@ -8,6 +8,10 @@ on:
 jobs:
   renew:
     runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      actions: write
     
     steps:
       - name: Checkout code
@@ -78,3 +82,11 @@ jobs:
             *.jpg
             *.png
           retention-days: 1
+      
+      - name: 🧹 清理旧的工作流运行记录
+        uses: MajorScruffy/delete-old-workflow-runs@v0.3.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          repository: ${{ github.repository }}
+          older-than-seconds: 3600
